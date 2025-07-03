@@ -27,7 +27,6 @@ class HeuristicChyronInterpreter(ClamsApp):
         self.mmif = mmif if isinstance(mmif, Mmif) else Mmif(mmif)
 
         new_view = self.mmif.new_view()
-        new_view.metadata.app = self.metadata.identifier
         self.sign_view(new_view, parameters)
         new_view.new_contain(DocumentTypes.TextDocument)
 
@@ -44,9 +43,7 @@ class HeuristicChyronInterpreter(ClamsApp):
         content = interpreter.split_text(text)
         mmif_vids = self.mmif.get_documents_by_type(DocumentTypes.VideoDocument)
         vid_id = mmif_vids[0].long_id
-        out_doc = new_view.new_textdocument(text=content, document=vid_id, origin=doc.long_id)
-        out_doc.add_property('provenance', 'derived')
-        out_doc.add_property('mime', 'application/json')
+        out_doc = new_view.new_textdocument(text=content, document=vid_id, origin=doc.long_id, provenance='derived', mime='application/json')
 
 def get_app():
     """
