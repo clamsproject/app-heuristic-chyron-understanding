@@ -37,7 +37,8 @@ def appmetadata() -> AppMetadata:
                             '`VideoDocument`. `origin` property stores the ID of the original OCR `TextDocument` '
                             'annotation. ')
     
-    # No runtime parameters besides universals.
+    metadata.add_parameter(name='normalize', default=False, type='boolean',
+                           description='Boolean parameter to set the app to generate a normalized name in the output.')
 
     return metadata
 

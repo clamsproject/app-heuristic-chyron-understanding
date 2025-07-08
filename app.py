@@ -40,7 +40,7 @@ class HeuristicChyronInterpreter(ClamsApp):
         Run the chyron interpreter over the document and add annotations to the view.
         """
         text = doc.text_value
-        content = interpreter.split_text(text)
+        content = interpreter.split_text(text, new_view.metadata.get_app_configuration('normalize'))
         mmif_vids = self.mmif.get_documents_by_type(DocumentTypes.VideoDocument)
         vid_id = mmif_vids[0].long_id
         out_doc = new_view.new_textdocument(text=content, document=vid_id, origin=doc.long_id, provenance='derived', mime='application/json')
