@@ -51,8 +51,3 @@ def normalize_text(text: str) -> str:
         normal_name = ' '.join(normal_parts[1:]) + ', ' + normal_parts[0] # to handle names with more than two words
 
     return normal_name
-
-if __name__ == '__main__':
-    names = ["CHARLES TOGUCHI", "ENNAT", "Rep. DANIEL", "-", "4", "LYNNE a WATERS", "Sen. Mary,Janel Mcmurdo", "Rep. Hal Jones (R)", "Rep. 33HEIN.O.EHIN (R)"]
-    for name in names:
-        print(split_text(name, normal=True))
