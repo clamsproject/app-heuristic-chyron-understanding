@@ -12,6 +12,7 @@ from mmif import Mmif, DocumentTypes
 
 import interpreter
 
+
 class HeuristicChyronInterpreter(ClamsApp):
 
     def __init__(self):
@@ -23,7 +24,6 @@ class HeuristicChyronInterpreter(ClamsApp):
         pass
 
     def _annotate(self, mmif: Mmif, **parameters) -> Mmif:
-
         self.mmif = mmif if isinstance(mmif, Mmif) else Mmif(mmif)
 
         new_view = self.mmif.new_view()
@@ -31,19 +31,20 @@ class HeuristicChyronInterpreter(ClamsApp):
         new_view.new_contain(DocumentTypes.TextDocument)
 
         for doc in self.mmif.get_documents_by_type(DocumentTypes.TextDocument):
-            self._run_interpreter(doc, new_view)
+            self._run_interpreter(doc, new_view, not parameters.get('note4mode'))
 
         return self.mmif
 
-    def _run_interpreter(self, doc, new_view):
+    def _run_interpreter(self, doc, new_view, do_normalize):
         """
         Run the chyron interpreter over the document and add annotations to the view.
         """
-        text = doc.text_value
-        content = interpreter.split_text(text)
+        content = interpreter.split_text(doc.text_value, do_normalize)
         mmif_vids = self.mmif.get_documents_by_type(DocumentTypes.VideoDocument)
         vid_id = mmif_vids[0].long_id
-        out_doc = new_view.new_textdocument(text=content, document=vid_id, origin=doc.long_id, provenance='derived', mime='application/json')
+        out_doc = new_view.new_textdocument(text=content, document=vid_id, origin=doc.long_id, provenance='derived',
+                                            mime='application/json')
+
 
 def get_app():
     """
