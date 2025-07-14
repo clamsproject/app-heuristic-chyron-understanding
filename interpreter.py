@@ -4,12 +4,10 @@ Chyron Interpreter (prototype)
 Reformats chyron text output from an OCR app as a name and list of attributes
 presented as an escaped json string.
 """
-
-__VERSION__ = 'v0.2'
-
 import json
 
-def split_text(text: str, normal=False) -> str:
+
+def split_text(text: str, normalize=False) -> str:
     """
     Splits input string on newline and creates a dictionary with 'name-as-written'
     and 'attributes' keys, with string content as values. If normalization parameter
@@ -17,15 +15,24 @@ def split_text(text: str, normal=False) -> str:
     Returns escaped json string of dictionary.
     """
     content = {}
-    lines = text.split("\n")
+    lines = list(filter(lambda x: x is not None and len(x) > 0, text.split("\n")))
     if lines:
         content["name-as-written"] = lines[0]
-        if normal:
+        if normalize:
             content["name-normalized"] = normalize_text(lines[0])
-        content["attributes"] = [x for x in lines[1:] if x != '']
+            last_line_processed = 0
+        else:
+            if len(lines) > 1:
+                content["name-normalized"] = lines[1]
+                last_line_processed = 1
+            else:
+                content["name-normalized"] = ''
+                last_line_processed = 0
+        content["attributes"] = lines[(last_line_processed+1):]
     content = json.dumps(content)
 
     return content
+
 
 def normalize_text(text: str) -> str:
     """
@@ -48,6 +55,6 @@ def normalize_text(text: str) -> str:
     if len(normal_parts) == 1:
         normal_name = normal_parts[0]
     else:
-        normal_name = ' '.join(normal_parts[1:]) + ', ' + normal_parts[0] # to handle names with more than two words
+        normal_name = ' '.join(normal_parts[1:]) + ', ' + normal_parts[0]  # to handle names with more than two words
 
     return normal_name

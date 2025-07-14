@@ -18,6 +18,7 @@ def appmetadata() -> AppMetadata:
     - https://sdk.clams.ai/appmetadata.html metadata specification.
     - https://sdk.clams.ai/autodoc/clams.appmetadata.html python API
     
+    
     :return: AppMetadata object holding all necessary information.
     """
     metadata = AppMetadata(
@@ -32,13 +33,18 @@ def appmetadata() -> AppMetadata:
     # I/O Spec
     in_doc = metadata.add_input(DocumentTypes.TextDocument)
     in_doc.add_description('Text content transcribed from video input by docTR/Tesseract/LLAVA.')
-    out_doc = metadata.add_output(DocumentTypes.TextDocument, **{'document': '*', 'origin': '*'})
+    out_doc = metadata.add_output(DocumentTypes.TextDocument, 
+                                  document='*', origin='*', provenance='derived', mime='application/json')
     out_doc.add_description('Reformatted chyron text. `document` property stores the ID of the original source '
                             '`VideoDocument`. `origin` property stores the ID of the original OCR `TextDocument` '
-                            'annotation. ')
+                            'annotation. Reformatted text is escaped JSON string with three fields: '
+                            '`name-as-written`, `name-normalized`, and `attributes`. ')
     
-    metadata.add_parameter(name='normalize', default=False, type='boolean',
-                           description='Boolean parameter to set the app to generate a normalized name in the output.')
+    metadata.add_parameter(name='note4mode', default=False, type='boolean',
+                           description='Boolean to set the app to run in "note-4" mode and to take the second line '
+                                       '(if available) from the input text to be the `name-normalized` value. The '
+                                       'default is false, which means the app will try to generate normalization from'
+                                       '`name-as-written` (from the first line) value. ')
 
     return metadata
 
