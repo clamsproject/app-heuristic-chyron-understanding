@@ -8,6 +8,19 @@ presented as an escaped json string.
 import json
 import re
 
+# a markdown code fence line (e.g., "```" or "```text"), which some VLMs
+# wrap around their transcriptions
+CODE_FENCE = re.compile(r'^\s*```[\w-]*\s*$')
+
+
+def clean_lines(text: str) -> list:
+    """
+    Splits OCR text into lines, leaving out blank lines and markdown code
+    fence lines.
+    """
+    return [line for line in text.split("\n")
+            if line.strip() and not CODE_FENCE.match(line)]
+
 
 def split_text(text: str, normalize=False) -> str:
     """
@@ -17,7 +30,7 @@ def split_text(text: str, normalize=False) -> str:
     Returns escaped json string of dictionary.
     """
     content = {}
-    lines = list(filter(lambda x: x is not None and len(x) > 0, text.split("\n")))
+    lines = clean_lines(text)
     if lines:
         content["name-as-written"] = lines[0]
         if normalize:
@@ -47,35 +60,35 @@ def normalize_text(text: str) -> str:
     text = text.strip()
 
     # remove common parenthetical content like (D)
-    p_close = '..\)'
-    p_open = '\(..'
-    text = re.sub(p_close, ' ', text, re.X)
-    text = re.sub(p_open, ' ', text, re.X)
+    p_close = r'..\)'
+    p_open = r'\(..'
+    text = re.sub(p_close, ' ', text)
+    text = re.sub(p_open, ' ', text)
 
     # remove extraneous dashes (without clipping properly hyphenated names)
-    dash = '(\s*-\s+)|(\s+-\s*)|^-|-$'
-    text = re.sub(dash, ' ', text, re.X)
+    dash = r'(\s*-\s+)|(\s+-\s*)|^-|-$'
+    text = re.sub(dash, ' ', text)
 
     # remove various non-letter characters that appear
-    punc = '[,#*@:[]'
-    text = re.sub(punc, ' ', text, re.X)
+    punc = r'[,#*@:[]'
+    text = re.sub(punc, ' ', text)
 
     # remove numbers from beginning of text
-    num = '\A[0-9]+'
-    text = re.sub(num, ' ', text, re.X)
+    num = r'\A[0-9]+'
+    text = re.sub(num, ' ', text)
 
     # remove patterns up to and incl. a period NOT at end of string
     # handles e.g. Sen. XYZ without removing XYZ Jr. or initials like ABC F. XYZ
-    abb = '[^\s.]{2,}\.(?=.)'
-    text = re.sub(abb, ' ', text, re.X)
+    abb = r'[^\s.]{2,}\.(?=.)'
+    text = re.sub(abb, ' ', text)
 
     # and split initials like A.B. into A. B.
-    inits = '([A-Za-z]\.){2,}'
-    target = re.search(inits, text, re.X)
+    inits = r'([A-Za-z]\.){2,}'
+    target = re.search(inits, text)
     if target:
         start_idx = target.span()[0]
         end_idx = target.span()[1]
-        splt = re.sub('\.(?=.)', '. ', target.group(), re.X)
+        splt = re.sub(r'\.(?=.)', '. ', target.group())
         text = ''.join([text[0:start_idx], splt, text[end_idx:]])
 
     # remove any extraneous whitespace added before splitting
